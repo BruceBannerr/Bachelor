@@ -1,59 +1,112 @@
-import pandas as pd 
-import math
+import pandas as pd
+import numpy as np
 
+from matplotlib import pyplot as plt
 
-def clean(printing=False):
-    test_id = pd.read_csv("test_identity.csv")
-    test_tr = pd.read_csv("test_transaction.csv")
-    train_id = pd.read_csv("train_identity.csv")
-    train_tr = pd.read_csv("train_transaction.csv")
-    
-    if (printing):
-        # Hvor mange procent i hver kolonne er NaN?
-        print("_____test id______________________")
-        print(test_id.isnull().mean() * 100)
-        print("_____test tr______________________")
-        print(test_tr.isnull().mean() * 100)
-        print("_____train id______________________")
-        print(train_id.isnull().mean() * 100)
-        print("_____train tr______________________")
-        print(train_tr.isnull().mean() * 100)
-    
+from sklearn.impute import SimpleImputer
+import seaborn as sns
 
-    if (printing):
-    #Sorter dem fra hvor vi mangler mere end 25% af data
-        print("_______________test id____________________")
-        print(test_id.shape)
-    test_id_thresh = math.floor(test_id.shape[0]*0.75)
-    test_id = test_id.dropna(axis='columns', thresh = test_id_thresh)
-    if (printing):
-        print(test_id.shape)
-        print("_______________test tr____________________")
-        print(test_tr.shape)
-    test_tr_thresh = math.floor(test_tr.shape[0]*0.75)
-    test_tr = test_tr.dropna(axis='columns', thresh = test_tr_thresh)
-    if (printing):
-        print(test_tr.shape)
-        print("_______________train id____________________")
-        print(train_id.shape)
-    train_id_thresh = math.floor(train_id.shape[0]*0.75)
-    train_id = train_id.dropna(axis='columns', thresh = train_id_thresh)
-    if (printing):
-        print(train_id.shape)
-        print("_______________train tr____________________")
-        print(train_tr.shape)
-    train_tr_thresh = math.floor(train_tr.shape[0]*0.75)
-    train_tr = train_tr.dropna(axis='columns', thresh = train_tr_thresh)
-    if (printing):
-        print(train_tr.shape)
-    
+sns.set_palette("PiYG")
 
-    ###############################Vi kan nok ikke bare lige gøre det, da nogle kommentarer siger at ID ikke helt passer
-    train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
-    test = pd.merge(test_tr, test_id, on='TransactionID', how='left')
+# Load dataset
+test_id = pd.read_csv("test_identity.csv")
+test_tr = pd.read_csv("test_transaction.csv")
+train_id = pd.read_csv("train_identity.csv")
+train_tr = pd.read_csv("train_transaction.csv")
 
-    return test, train
+# Merge data
+train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
+test = pd.merge(test_tr, test_id, on='TransactionID', how='left')
+#del test_id, test_tr, train_id, train_tr
 
+# Missing values
+combined = pd.concat([train.drop(columns=['isFraud', 'TransactionID']), test.drop(columns='TransactionID')])
+len_train = len(train)
 
-if __name__ == "__main__":
-    clean(printing=True)
+y = train['isFraud']
+
+# Dropping columns with more than 25% missing values 
+misval = combined.isnull().sum()/len(combined)
+combined_mv = combined.drop(columns=misval[misval>0.25].index)
+del combined
+
+# Filling missing values
+num = combined_mv.select_dtypes(include=np.number) 
+imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+num_df = pd.DataFrame(imp.fit_transform(num), columns=num.columns)
+del imp, num
+
+cat = combined_mv.select_dtypes(exclude=np.number)
+imp = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+cat_df = pd.DataFrame(imp.fit_transform(cat), columns=cat.columns)
+del imp, cat
+
+# Combine
+combined_clean = pd.concat([num_df, cat_df], axis=1)
+del num_df, cat_df, combined_mv
+
+# One-hot encoding
+combined_encoded = pd.get_dummies(combined_clean, drop_first=True)
+del combined_clean
+
+# Separate test & train splitting ved 80%
+X = combined_encoded.iloc[:len_train]
+test = combined_encoded.iloc[len_train:]
+train2 = pd.concat([X,y], axis = 1)
+del combined_encoded, X
+
+train2.sort_values('TransactionDT', inplace=True)
+
+X = train2.drop(['isFraud'], axis=1)
+y = train2['isFraud']
+
+X_train = X.iloc[:int(len(X)*.8)]
+y_train = y.iloc[:int(len(X)*.8)]
+X_val = X.iloc[int(len(X)*.8):]
+y_val = y.iloc[int(len(X)*.8):]
+
+#### Grrafer
+e = train["isFraud"].value_counts().values
+lab = ["Not Fraud", "Fraud"]
+targetplot = sns.barplot(e)
+targetplot.set_xticklabels(lab)
+plt.title("Target variable count")
+plt.savefig("target.pdf")
+plt.show()
+
+del e, lab, targetplot
+
+# TransactionAmt (https://www.kaggle.com/code/jesucristo/fraud-complete-eda#TransactionAmt)
+## Fraud == 1 subset
+train_fraud = train[train["isFraud"] == 1]
+fig, ax = plt.subplots(1, 2)
+
+sns.distplot(np.log(train['TransactionAmt'].values), ax=ax[0])
+ax[0].set_title('log Distribution of TransactionAmt')
+ax[1].set_xlim([min(np.log(train['TransactionAmt'].values)), max(np.log(train['TransactionAmt'].values))])
+
+sns.distplot(np.log(train_fraud['TransactionAmt'].values), ax=ax[1])
+ax[1].set_title('log Distribution of TransactionAmt (isFraud == 1)')
+ax[1].set_xlim([min(np.log(train_fraud['TransactionAmt'].values)), max(np.log(train_fraud['TransactionAmt'].values))])
+plt.savefig("trans.pdf")
+plt.show()
+
+sns.countplot(x="ProductCD", hue = "isFraud", data=train)
+plt.title('Count of productcode')
+plt.savefig("productcd.pdf")
+plt.show()
+
+sns.countplot(x="DeviceType", data=train_id)
+plt.title('Count of devicetypes')
+plt.savefig("device.pdf")
+plt.show()
+
+sns.countplot(x="card4", hue = "isFraud", data=train_tr)
+plt.title('Count of cardtypes')
+plt.savefig("card4.pdf")
+plt.show()
+
+sns.countplot(y="P_emaildomain", hue = "isFraud", data=train_tr)
+plt.title('Count of purchaser emaildomain')
+plt.savefig("pemail.pdf")
+plt.show()
