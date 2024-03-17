@@ -79,7 +79,7 @@ del e, lab, targetplot
 # TransactionAmt (https://www.kaggle.com/code/jesucristo/fraud-complete-eda#TransactionAmt)
 ## Fraud == 1 subset
 train_fraud = train[train["isFraud"] == 1]
-fig, ax = plt.subplots(1, 2)
+fig, ax = plt.subplots(1, 2, figsize=(15, 15))
 
 sns.distplot(np.log(train['TransactionAmt'].values), ax=ax[0])
 ax[0].set_title('log Distribution of TransactionAmt')
@@ -106,6 +106,7 @@ plt.title('Count of cardtypes')
 plt.savefig("card4.pdf")
 plt.show()
 
+plt.figure(figsize=(15,10))
 sns.countplot(y="P_emaildomain", hue = "isFraud", data=train_tr)
 plt.title('Count of purchaser emaildomain')
 plt.savefig("pemail.pdf")
