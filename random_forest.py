@@ -1,3 +1,6 @@
+from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score
 import pandas as pd
 import numpy as np
 
@@ -18,22 +21,23 @@ train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
 test = pd.merge(test_tr, test_id, on='TransactionID', how='left')
 del test_id, test_tr, train_id, train_tr
 
-# 
-submission = pd.DataFrame({'TransactionID':test.TransactionID})
+#
+submission = pd.DataFrame({'TransactionID': test.TransactionID})
 
 # Missing values
-combined = pd.concat([train.drop(columns=['isFraud', 'TransactionID']), test.drop(columns='TransactionID')])
+combined = pd.concat([train.drop(
+    columns=['isFraud', 'TransactionID']), test.drop(columns='TransactionID')])
 len_train = len(train)
 
 y = train['isFraud']
 
-# Dropping columns with more than 25% missing values 
+# Dropping columns with more than 25% missing values
 misval = combined.isnull().sum()/len(combined)
-combined_mv = combined.drop(columns=misval[misval>0.25].index)
+combined_mv = combined.drop(columns=misval[misval > 0.25].index)
 del combined
 
 # Filling missing values
-num = combined_mv.select_dtypes(include=np.number) 
+num = combined_mv.select_dtypes(include=np.number)
 imp = SimpleImputer(missing_values=np.nan, strategy='mean')
 num_df = pd.DataFrame(imp.fit_transform(num), columns=num.columns)
 del imp, num
@@ -54,7 +58,7 @@ del combined_clean
 # Separate test & train splitting ved 80%
 X = combined_encoded.iloc[:len_train]
 test = combined_encoded.iloc[len_train:]
-train = pd.concat([X,y], axis = 1)
+train = pd.concat([X, y], axis=1)
 del combined_encoded, X
 
 train.sort_values('TransactionDT', inplace=True)
@@ -68,16 +72,30 @@ X_val = X.iloc[int(len(X)*.8):]
 y_val = y.iloc[int(len(X)*.8):]
 
 # Random Forest Classifier
-rfc = RandomForestClassifier(criterion='entropy', max_features='sqrt', max_samples=0.5, min_samples_split=80,random_state=42)
+rfc = RandomForestClassifier(criterion='entropy', max_features='sqrt',
+                             max_samples=0.5, min_samples_split=80, random_state=42)
 rfc.fit(X_train, y_train)
 y_pred = rfc.predict_proba(X_val)
 auc = roc_auc_score(y_val, y_pred[:, 1])
-print("Validation AUC =",auc)
+print("Validation AUC =", auc)
+
+
+# cross validation
+
+k = 5
+kf = KFold(n_splits=k, random_state=None)
+
+result = cross_val_score(rfc, X, y, cv=kf)
+
+print(f'Avg accuracy: {result.mean()}')
+print(result)
+
 
 # Feature importances
-pd.Series(rfc.feature_importances_, index=X.columns).nlargest(15).plot(kind='barh')
+pd.Series(rfc.feature_importances_, index=X.columns).nlargest(
+    15).plot(kind='barh')
 plt.show()
 
-### Prediction submission
+# Prediction submission
 pred = rfc.predict_proba(test)
 submission['isFraud'] = pred[:, 1]
