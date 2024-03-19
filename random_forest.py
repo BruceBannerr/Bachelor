@@ -1,3 +1,5 @@
+from pprint import pprint
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
@@ -9,6 +11,7 @@ from matplotlib import pyplot as plt
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
+
 
 # Load dataset
 test_id = pd.read_csv("test_id_small.csv", index_col=[0])
@@ -71,24 +74,53 @@ y_train = y.iloc[:int(len(X)*.8)]
 X_val = X.iloc[int(len(X)*.8):]
 y_val = y.iloc[int(len(X)*.8):]
 
+# START COPY PASTED CODE https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
+# Randomized search https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+n_estimators = [int(x) for x in np.linspace(start=200, stop=2000, num=10)]
+# Number of features to consider at every split
+max_features = [None, 'log2', 'sqrt']
+# Maximum number of levels in tree
+max_depth = [int(x) for x in np.linspace(10, 110, num=11)]
+max_depth.append(None)
+# Minimum number of samples required to split a node
+min_samples_split = [2, 5, 10, 80]
+# Minimum number of samples required at each leaf node
+min_samples_leaf = [1, 2, 4]
+# Method of selecting samples for training each tree
+bootstrap = [True, False]  # Create the random grid
+
+criterion = ['gini', 'entropy']
+
+random_grid = {'n_estimators': n_estimators,
+               'max_features': max_features,
+               'max_depth': max_depth,
+               'min_samples_split': min_samples_split,
+               'min_samples_leaf': min_samples_leaf,
+               'bootstrap': bootstrap,
+               'criterion': criterion}
+
 # Random Forest Classifier
-rfc = RandomForestClassifier(criterion='entropy', max_features='sqrt',
-                             max_samples=0.5, min_samples_split=80, random_state=42)
+rf = RandomForestClassifier()
+rfc = RandomizedSearchCV(estimator=rf, param_distributions=random_grid,
+                         n_iter=100, cv=3, verbose=1, random_state=42, n_jobs=-1)
 rfc.fit(X_train, y_train)
+pprint(rfc.best_params_)
+# END COPY PASTED CODE
+
+# Validation AUC
 y_pred = rfc.predict_proba(X_val)
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =", auc)
 
 
-# cross validation
+# # cross validation
 
-k = 5
-kf = KFold(n_splits=k, random_state=None)
+# k = 5
+# kf = KFold(n_splits=k, random_state=None)
 
-result = cross_val_score(rfc, X, y, cv=kf)
+# result = cross_val_score(rfc, X, y, cv=kf)
 
-print(f'Avg accuracy: {result.mean()}')
-print(result)
+# print(f'Avg accuracy: {result.mean()}')
 
 
 # Feature importances
