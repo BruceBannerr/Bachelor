@@ -82,6 +82,15 @@ kf = KFold(n_splits=k, random_state=None)
 result = cross_val_score(logreg, X, y, scoring = "roc_auc", cv=kf)
 print(f'Avg accuracy: {result.mean()}')
 
+# Roc plot
+fpr, tpr, _ = roc_curve(y_val, y_pred[::,1])
+plt.plot([0,1], [0,1],"k--")
+plt.plot(fpr,tpr, marker='.')
+plt.xlabel("False Pos Rate")
+plt.ylabel("True Pos Rate")
+plt.title("ROC-curve")
+plt.show()
+
 ### Prediction submission
 pred = logreg.predict_proba(test)
 submission['isFraud'] = pred[:, 1]
