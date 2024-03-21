@@ -69,7 +69,7 @@ X_val = X.iloc[int(len(X)*.8):]
 y_val = y.iloc[int(len(X)*.8):]
 
 # Logistic regression
-logreg = LogisticRegression(max_iter=10000, solver = "sag", random_state=42)
+logreg = LogisticRegression(max_iter=10000, solver = "saga", random_state=42)
 logreg.fit(X_train, y_train)
 y_pred = logreg.predict_proba(X_val)
 
