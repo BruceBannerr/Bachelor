@@ -5,6 +5,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
 
+from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score
+
 # Load dataset
 test_id = pd.read_csv("test_id_small.csv", index_col=[0])
 test_tr = pd.read_csv("test_tr_small.csv", index_col=[0])
@@ -72,6 +75,12 @@ y_pred = logreg.predict_proba(X_val)
 
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =",auc)
+
+# Cross validation
+k = 5
+kf = KFold(n_splits=k, random_state=None)
+result = cross_val_score(logreg, X, y, scoring = "roc_auc", cv=kf)
+print(f'Avg accuracy: {result.mean()}')
 
 ### Prediction submission
 pred = logreg.predict_proba(test)
