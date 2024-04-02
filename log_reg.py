@@ -7,6 +7,8 @@ from sklearn.metrics import roc_auc_score
 
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import roc_curve
+import matplotlib.pyplot as plt
 
 # Load dataset
 test_id = pd.read_csv("test_id_small.csv", index_col=[0])
