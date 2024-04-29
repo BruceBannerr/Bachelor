@@ -115,3 +115,21 @@ sns.countplot(y="P_emaildomain", hue = "isFraud", data=train_tr, , order=train_t
 plt.title('Count of purchaser emaildomain')
 plt.savefig("pemail.pdf")
 plt.show()
+
+####################### REN COPYPASTE SÅ HUSK AT CITERE https://www.kaggle.com/code/fchmiel/day-and-time-powerful-predictive-feature/notebook
+
+def make_hour_feature(df, tname='TransactionDT'):
+    hours = df[tname] / (3600)        
+    encoded_hours = np.floor(hours) % 24
+    return encoded_hours
+
+train['hours'] = make_hour_feature(train)
+plt.plot(train.groupby('hours').mean()['isFraud'], color='k')
+ax = plt.gca()
+ax2 = ax.twinx()
+_ = ax2.hist(train['hours'], alpha=0.3, bins=24)
+ax.set_xlabel('Encoded hour')
+ax.set_ylabel('Fraction of fraudulent transactions')
+
+ax2.set_ylabel('Number of transactions')
+plt.show()
