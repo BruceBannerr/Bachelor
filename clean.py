@@ -73,8 +73,7 @@ targetplot.set_xticklabels(lab)
 plt.title("Target variable count")
 plt.savefig("target.pdf")
 plt.show()
-f = train.value_counts().values
-g = e/f
+
 
 del e, lab, targetplot
 
