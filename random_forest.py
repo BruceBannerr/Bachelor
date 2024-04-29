@@ -14,10 +14,10 @@ from sklearn.ensemble import RandomForestClassifier
 
 
 # Load dataset
-test_id = pd.read_csv("test_id_small.csv", index_col=[0])
-test_tr = pd.read_csv("test_tr_small.csv", index_col=[0])
-train_id = pd.read_csv("train_id_small.csv", index_col=[0])
-train_tr = pd.read_csv("train_tr_small.csv", index_col=[0])
+test_id = pd.read_csv("test_identity.csv", index_col=[0])
+test_tr = pd.read_csv("test_transaction.csv", index_col=[0])
+train_id = pd.read_csv("train_identity.csv", index_col=[0])
+train_tr = pd.read_csv("train_transaction.csv", index_col=[0])
 
 # Merge data
 train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
