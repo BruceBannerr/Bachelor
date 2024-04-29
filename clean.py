@@ -111,7 +111,7 @@ plt.savefig("card4.pdf")
 plt.show()
 
 plt.figure(figsize=(15,10))
-sns.countplot(y="P_emaildomain", hue = "isFraud", data=train_tr)
+sns.countplot(y="P_emaildomain", hue = "isFraud", data=train_tr, , order=train_tr.P_emaildomain.value_counts().iloc[:6].index)
 plt.title('Count of purchaser emaildomain')
 plt.savefig("pemail.pdf")
 plt.show()
