@@ -11,10 +11,10 @@ from sklearn.metrics import roc_curve
 import matplotlib.pyplot as plt
 
 # Load dataset
-test_id = pd.read_csv("test_identity.csv", index_col=[0])
-test_tr = pd.read_csv("test_transaction.csv", index_col=[0])
-train_id = pd.read_csv("train_identity.csv", index_col=[0])
-train_tr = pd.read_csv("train_transaction.csv", index_col=[0])
+test_id = pd.read_csv("test_identity.csv")
+test_tr = pd.read_csv("test_transaction.csv")
+train_id = pd.read_csv("train_identity.csv")
+train_tr = pd.read_csv("train_transaction.csv")
 
 # Merge data
 train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
