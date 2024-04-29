@@ -102,7 +102,7 @@ plt.savefig("device.pdf")
 plt.show()
 
 sns.countplot(x="card4", hue = "isFraud", data=train_tr)
-plt.title('Count of cardtypes')
+plt.title('Card category')
 plt.savefig("card4.pdf")
 plt.show()
 
