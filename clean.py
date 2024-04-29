@@ -74,8 +74,11 @@ plt.title("Target variable count")
 plt.savefig("target.pdf")
 plt.show()
 
+# Hvor mange er der egentlig af hver
+f = train["isFraud"].value_counts()
+print(f)
 
-del e, lab, targetplot
+del e, f, lab, targetplot
 
 # TransactionAmt (https://www.kaggle.com/code/jesucristo/fraud-complete-eda#TransactionAmt)
 ## Fraud == 1 subset
