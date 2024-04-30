@@ -9,6 +9,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import roc_curve
 import matplotlib.pyplot as plt
+from sklearn.metrics import log_loss
 
 # Load dataset
 test_id = pd.read_csv("test_identity.csv")
@@ -77,6 +78,13 @@ y_pred = logreg.predict_proba(X_val)
 
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =",auc)
+
+acc = logreg.score(X_val, y_val)
+print("Accuracy: ", acc)
+
+loss = log_loss(y_val,y_pred[:,1])
+print("Log loss: ", loss)
+
 
 # Cross validation
 k = 5
