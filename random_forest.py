@@ -5,6 +5,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import numpy as np
+from sklearn.metrics import log_loss
 
 from matplotlib import pyplot as plt
 
@@ -111,6 +112,13 @@ pprint(rfc.best_params_)
 y_pred = rfc.predict_proba(X_val)
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =", auc)
+
+acc = rfc.score(X_val, y_val)
+print("Accuracy: ", acc)
+
+loss = log_loss(y_val,y_pred[:,1])
+print("Log loss: ", loss)
+
 
 
 # # cross validation
