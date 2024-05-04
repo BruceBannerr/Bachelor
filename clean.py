@@ -71,7 +71,7 @@ lab = ["Not Fraud", "Fraud"]
 targetplot = sns.barplot(e)
 targetplot.set_xticklabels(lab)
 plt.title("Target variable count")
-plt.savefig("target.pdf")
+plt.savefig("target.pdf", format="pdf")
 plt.show()
 
 # Hvor mange er der egentlig af hver
@@ -92,28 +92,28 @@ ax[1].set_xlim([min(np.log(train['TransactionAmt'].values)), max(np.log(train['T
 sns.distplot(np.log(train_fraud['TransactionAmt'].values), ax=ax[1])
 ax[1].set_title('log Distribution of TransactionAmt (isFraud == 1)')
 ax[1].set_xlim([min(np.log(train_fraud['TransactionAmt'].values)), max(np.log(train_fraud['TransactionAmt'].values))])
-plt.savefig("trans.pdf")
+plt.savefig("trans.pdf", format="pdf")
 plt.show()
 
 sns.countplot(x="ProductCD", hue = "isFraud", data=train)
 plt.title('Count of productcode')
-plt.savefig("productcd.pdf")
+plt.savefig("productcd.pdf", format="pdf")
 plt.show()
 
 sns.countplot(x="DeviceType", data=train_id)
 plt.title('Count of devicetypes')
-plt.savefig("device.pdf")
+plt.savefig("device.pdf", format="pdf")
 plt.show()
 
 sns.countplot(x="card4", hue = "isFraud", data=train_tr)
 plt.title('Card category')
-plt.savefig("card4.pdf")
+plt.savefig("card4.pdf", format="pdf")
 plt.show()
 
 plt.figure(figsize=(15,10))
 sns.countplot(y="P_emaildomain", hue = "isFraud", data=train_tr, , order=train_tr.P_emaildomain.value_counts().iloc[:6].index)
 plt.title('Count of purchaser emaildomain')
-plt.savefig("pemail.pdf")
+plt.savefig("pemail.pdf", format="pdf")
 plt.show()
 
 ####################### REN COPYPASTE SÅ HUSK AT CITERE https://www.kaggle.com/code/fchmiel/day-and-time-powerful-predictive-feature/notebook
@@ -124,7 +124,8 @@ def make_hour_feature(df, tname='TransactionDT'):
     return encoded_hours
 
 train['hours'] = make_hour_feature(train)
-plt.plot(train.groupby('hours').mean()['isFraud'], color='k')
+
+plt.plot(train.groupby('hours')['isFraud'].mean(), color='k')
 ax = plt.gca()
 ax2 = ax.twinx()
 _ = ax2.hist(train['hours'], alpha=0.3, bins=24)
@@ -132,4 +133,6 @@ ax.set_xlabel('Encoded hour')
 ax.set_ylabel('Fraction of fraudulent transactions')
 
 ax2.set_ylabel('Number of transactions')
+plt.tight_layout()
+plt.savefig("hour.pdf", format="pdf")
 plt.show()
