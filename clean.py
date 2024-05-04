@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from sklearn.impute import SimpleImputer
 import seaborn as sns
 
-sns.set_palette("PiYG")
+sns.set_palette("bright")
 
 # Load dataset
 test_id = pd.read_csv("test_identity.csv")
