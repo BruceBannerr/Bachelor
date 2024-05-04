@@ -15,6 +15,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
 
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import roc_curve
 
 # Load dataset
 test_id = pd.read_csv("test_identity.csv")
@@ -79,13 +81,11 @@ y_val = y.iloc[int(len(X)*.8):]
 
 ## Fra rf bare for xg-boost
 random_grid = {
-    'learning_rate' : [0.05,0.10,0.15,0.20,0.25,0.30],
-    'max_depth' : [ 3, 4, 5, 6, 8, 10, 12, 15],
+    'learning_rate' : [0.01,0.10,0.20,0.30],
+    'max_depth' : [int(x) for x in np.linspace(1, 30, num=6)],
     'min_child_weight' : [ 1, 3, 5, 7 ],
     'gamma': [ 0.0, 0.1, 0.2 , 0.3, 0.4 ],
-    'colsample_bytree' : [ 0.3, 0.4, 0.5 , 0.7 ],
-    'colsample_bylevel': [0.5, 1.0, 0.1],
-    'n_estimators': [100, 250, 500, 750]
+    'colsample_bytree' : [ 0.3, 0.4, 0.5 , 0.7, 0.8]
     }
 
 # Random Forest Classifier
@@ -106,3 +106,22 @@ print("Accuracy: ", acc)
 
 loss = log_loss(y_val,y_pred[:,1])
 print("Log loss: ", loss)
+
+#Confusion matrix
+y_pred_bin = (y_pred > 0.5)
+y_pred_bin = np.argmax(y_pred_bin, axis=1)
+ConfusionMatrixDisplay.from_predictions(y_val, y_pred_bin)
+plt.tight_layout()
+plt.savefig('XGBConfusionMatrix.pdf', format='pdf')
+plt.show()
+
+# Roc plot
+fpr, tpr, _ = roc_curve(y_val, y_pred[::,1])
+plt.plot([0,1], [0,1],"k--")
+plt.plot(fpr,tpr, marker='.')
+plt.xlabel("False Pos Rate")
+plt.ylabel("True Pos Rate")
+plt.title("ROC-curve")
+plt.tight_layout()
+plt.savefig('ROC-curve.pdf', format='pdf')
+plt.show()
