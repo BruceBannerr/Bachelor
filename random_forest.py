@@ -13,6 +13,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
 
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import roc_curve
 
 # Load dataset
 test_id = pd.read_csv("test_identity.csv")
@@ -77,16 +79,16 @@ y_val = y.iloc[int(len(X)*.8):]
 
 # START COPY PASTED CODE https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
 # Randomized search https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-n_estimators = [int(x) for x in np.linspace(start=200, stop=2000, num=10)]
+n_estimators = [int(x) for x in np.linspace(start=10, stop=100, num=11)]
 # Number of features to consider at every split
-max_features = [None, 'log2', 'sqrt']
+max_features = ['log2', 'sqrt']
 # Maximum number of levels in tree
-max_depth = [int(x) for x in np.linspace(10, 110, num=11)]
-max_depth.append(None)
+max_depth = [int(x) for x in np.linspace(1, 30, num=6)]
+#max_depth.append(None)
 # Minimum number of samples required to split a node
-min_samples_split = [2, 5, 10, 80]
+min_samples_split = [4, 10, 50]
 # Minimum number of samples required at each leaf node
-min_samples_leaf = [1, 2, 4]
+min_samples_leaf = [2, 4, 8]
 # Method of selecting samples for training each tree
 bootstrap = [True, False]  # Create the random grid
 
@@ -119,22 +121,29 @@ print("Accuracy: ", acc)
 loss = log_loss(y_val,y_pred[:,1])
 print("Log loss: ", loss)
 
+#Confusion matrix
+y_pred_bin = (y_pred > 0.5)
+y_pred_bin = np.argmax(y_pred_bin, axis=1)
+ConfusionMatrixDisplay.from_predictions(y_val, y_pred_bin)
+plt.tight_layout()
+plt.savefig('RFConfusionMatrix.pdf', format='pdf')
+plt.show()
 
-
-# # cross validation
-
-# k = 5
-# kf = KFold(n_splits=k, random_state=None)
-
-# result = cross_val_score(rfc, X, y, cv=kf)
-
-# print(f'Avg accuracy: {result.mean()}')
-
+# Roc plot
+fpr, tpr, _ = roc_curve(y_val, y_pred[::,1])
+plt.plot([0,1], [0,1],"k--")
+plt.plot(fpr,tpr, marker='.')
+plt.xlabel("False Pos Rate")
+plt.ylabel("True Pos Rate")
+plt.title("ROC-curve")
+plt.tight_layout()
+plt.savefig('RFROC-curve.pdf', format='pdf')
+plt.show()
 
 # Feature importances
-pd.Series(rfc.feature_importances_, index=X.columns).nlargest(
-    15).plot(kind='barh')
-plt.show()
+#pd.Series(rfc.feature_importances_, index=X.columns).nlargest(
+    #15).plot(kind='barh')
+#plt.show()
 
 # Prediction submission
 pred = rfc.predict_proba(test)
