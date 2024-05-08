@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import ConfusionMatrixDisplay
 
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
@@ -72,7 +73,7 @@ X_val = X.iloc[int(len(X)*.8):]
 y_val = y.iloc[int(len(X)*.8):]
 
 # Logistic regression
-logreg = LogisticRegression(max_iter=10000, solver = "saga", random_state=42)
+logreg = LogisticRegressionCV(max_iter=10000, solver = "saga", random_state=42, verbose = 1, n_jobs=-1, tol=0.00005, multi_class='ovr', cv=5)
 logreg.fit(X_train, y_train)
 y_pred = logreg.predict_proba(X_val)
 
@@ -85,12 +86,11 @@ print("Accuracy: ", acc)
 loss = log_loss(y_val,y_pred[:,1])
 print("Log loss: ", loss)
 
-
-# Cross validation
-k = 5
-kf = KFold(n_splits=k, random_state=None)
-result = cross_val_score(logreg, X, y, scoring = "roc_auc", cv=kf)
-print(f'Avg accuracy: {result.mean()}')
+#Confusion matrix
+y_pred_bin = (y_pred > 0.5)
+y_pred_bin = np.argmax(y_pred_bin, axis=1)
+ConfusionMatrixDisplay.from_predictions(y_val, y_pred_bin)
+plt.show()
 
 # Roc plot
 fpr, tpr, _ = roc_curve(y_val, y_pred[::,1])
