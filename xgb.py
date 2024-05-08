@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import log_loss
 
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import roc_curve
@@ -81,27 +82,27 @@ y_val = y.iloc[int(len(X)*.8):]
 
 ## Fra rf bare for xg-boost
 random_grid = {
-    'learning_rate' : [0.01,0.10,0.20,0.30],
+    #'learning_rate' : [0.05,0.10,0.15,0.20,0.25,0.30],
     'max_depth' : [int(x) for x in np.linspace(1, 30, num=6)],
     'min_child_weight' : [ 1, 3, 5, 7 ],
     'gamma': [ 0.0, 0.1, 0.2 , 0.3, 0.4 ],
-    'colsample_bytree' : [ 0.3, 0.4, 0.5 , 0.7, 0.8]
+    'colsample_bytree' : [ 0.3, 0.4, 0.5 , 0.7 ]
     }
 
-# Random Forest Classifier
+# XGBoost
 clf = xgb.XGBClassifier()
-rfc = RandomizedSearchCV(estimator=clf, param_distributions=random_grid,
+xg = RandomizedSearchCV(estimator=clf, param_distributions=random_grid,
                          n_iter=100, cv=3, verbose=1, random_state=42, n_jobs=-1)
 rfc.fit(X_train, y_train)
-pprint(rfc.best_params_)
+pprint(xg.best_params_)
 # END COPY PASTED CODE
 
 # Validation AUC
-y_pred = rfc.predict_proba(X_val)
+y_pred = xg.predict_proba(X_val)
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =", auc)
 
-acc = rfc.score(X_val, y_val)
+acc = xg.score(X_val, y_val)
 print("Accuracy: ", acc)
 
 loss = log_loss(y_val,y_pred[:,1])
