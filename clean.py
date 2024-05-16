@@ -17,7 +17,7 @@ train_tr = pd.read_csv("train_transaction.csv")
 # Merge data
 train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
 test = pd.merge(test_tr, test_id, on='TransactionID', how='left')
-#del test_id, test_tr, train_id, train_tr
+del test_id, test_tr, train_id, train_tr
 
 # Missing values
 combined = pd.concat([train.drop(columns=['isFraud', 'TransactionID']), test.drop(columns='TransactionID')])
@@ -80,11 +80,12 @@ print(f)
 
 del e, f, lab, targetplot
 
-# TransactionAmt (https://www.kaggle.com/code/jesucristo/fraud-complete-eda#TransactionAmt)
+# Transaction fraud fraction
 ## Fraud == 1 subset
 train_fraud = train[train["isFraud"] == 1]
 fig, ax = plt.subplots(1, 2, figsize=(15, 15))
 
+# Transaction amount
 sns.distplot(np.log(train['TransactionAmt'].values), ax=ax[0])
 ax[0].set_title('log Distribution of TransactionAmt')
 ax[1].set_xlim([min(np.log(train['TransactionAmt'].values)), max(np.log(train['TransactionAmt'].values))])
@@ -95,29 +96,33 @@ ax[1].set_xlim([min(np.log(train_fraud['TransactionAmt'].values)), max(np.log(tr
 plt.savefig("trans.pdf", format="pdf")
 plt.show()
 
+# Product code countplot
 sns.countplot(x="ProductCD", hue = "isFraud", data=train)
 plt.title('Count of productcode')
 plt.savefig("productcd.pdf", format="pdf")
 plt.show()
 
+# DeviceType plot
 sns.countplot(x="DeviceType", data=train_id)
 plt.title('Count of devicetypes')
 plt.savefig("device.pdf", format="pdf")
 plt.show()
 
+# Card category
 sns.countplot(x="card4", hue = "isFraud", data=train_tr)
 plt.title('Card category')
 plt.savefig("card4.pdf", format="pdf")
 plt.show()
 
+# Email domain
 plt.figure(figsize=(15,10))
 sns.countplot(y="P_emaildomain", hue = "isFraud", data=train_tr, , order=train_tr.P_emaildomain.value_counts().iloc[:6].index)
 plt.title('Count of purchaser emaildomain')
 plt.savefig("pemail.pdf", format="pdf")
 plt.show()
 
-####################### REN COPYPASTE SÅ HUSK AT CITERE https://www.kaggle.com/code/fchmiel/day-and-time-powerful-predictive-feature/notebook
-
+# fraud and time of the day
+# inspired from: https://www.kaggle.com/code/fchmiel/day-and-time-powerful-predictive-feature/notebook
 def make_hour_feature(df, tname='TransactionDT'):
     hours = df[tname] / (3600)        
     encoded_hours = np.floor(hours) % 24
