@@ -77,6 +77,7 @@ logreg = LogisticRegressionCV(max_iter=10000, solver = "saga", random_state=42, 
 logreg.fit(X_train, y_train)
 y_pred = logreg.predict_proba(X_val)
 
+# Evaluation metrics
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =",auc)
 
