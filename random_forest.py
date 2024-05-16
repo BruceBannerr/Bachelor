@@ -27,7 +27,7 @@ train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
 test = pd.merge(test_tr, test_id, on='TransactionID', how='left')
 del test_id, test_tr, train_id, train_tr
 
-#
+# Submission
 submission = pd.DataFrame({'TransactionID': test.TransactionID})
 
 # Missing values
@@ -77,8 +77,7 @@ y_train = y.iloc[:int(len(X)*.8)]
 X_val = X.iloc[int(len(X)*.8):]
 y_val = y.iloc[int(len(X)*.8):]
 
-# START COPY PASTED CODE https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
-# Randomized search https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+# Randomized search
 n_estimators = [int(x) for x in np.linspace(start=10, stop=100, num=11)]
 # Number of features to consider at every split
 max_features = ['log2', 'sqrt']
@@ -109,7 +108,7 @@ rfc.fit(X_train, y_train)
 pprint(rfc.best_params_)
 # END COPY PASTED CODE
 
-# Validation AUC
+# Evaluation metrics
 y_pred = rfc.predict_proba(X_val)
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =", auc)
@@ -138,11 +137,6 @@ plt.title("ROC-curve")
 plt.tight_layout()
 plt.savefig('RFROC-curve.pdf', format='pdf')
 plt.show()
-
-# Feature importances
-#pd.Series(rfc.feature_importances_, index=X.columns).nlargest(
-    #15).plot(kind='barh')
-#plt.show()
 
 # Prediction submission
 pred = rfc.predict_proba(test)
