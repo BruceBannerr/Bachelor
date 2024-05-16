@@ -30,7 +30,7 @@ train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
 test = pd.merge(test_tr, test_id, on='TransactionID', how='left')
 del test_id, test_tr, train_id, train_tr
 
-#
+# Submission
 submission = pd.DataFrame({'TransactionID': test.TransactionID})
 
 # Missing values
@@ -80,7 +80,7 @@ y_train = y.iloc[:int(len(X)*.8)]
 X_val = X.iloc[int(len(X)*.8):]
 y_val = y.iloc[int(len(X)*.8):]
 
-## Fra rf bare for xg-boost
+## Randomized search
 random_grid = {
     #'learning_rate' : [0.05,0.10,0.15,0.20,0.25,0.30],
     'max_depth' : [int(x) for x in np.linspace(1, 30, num=6)],
@@ -93,11 +93,10 @@ random_grid = {
 clf = xgb.XGBClassifier()
 xg = RandomizedSearchCV(estimator=clf, param_distributions=random_grid,
                          n_iter=100, cv=3, verbose=1, random_state=42, n_jobs=-1)
-rfc.fit(X_train, y_train)
+xg.fit(X_train, y_train)
 pprint(xg.best_params_)
-# END COPY PASTED CODE
 
-# Validation AUC
+# Evaluation metrics
 y_pred = xg.predict_proba(X_val)
 auc = roc_auc_score(y_val, y_pred[:, 1])
 print("Validation AUC =", auc)
