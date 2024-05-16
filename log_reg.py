@@ -23,7 +23,7 @@ train = pd.merge(train_tr, train_id, on='TransactionID', how='left')
 test = pd.merge(test_tr, test_id, on='TransactionID', how='left')
 del test_id, test_tr, train_id, train_tr
 
-# 
+# Make submission
 submission = pd.DataFrame({'TransactionID':test.TransactionID})
 
 # Missing values
